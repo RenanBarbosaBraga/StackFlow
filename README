@@ -1,145 +1,21 @@
 StackFlow
 
-Inventory Management System · REST API
-
-O StackFlow é um sistema de gerenciamento de estoque em desenvolvimento, projetado para facilitar o controle de produtos, a organização do inventário e o gerenciamento de informações operacionais por meio de uma aplicação web.
-
-O projeto tem como objetivo construir uma solução organizada, escalável e de fácil manutenção, aplicando boas práticas de desenvolvimento de software e arquitetura de APIs REST.
-
-Sobre o projeto
-
-O StackFlow surgiu com a proposta de desenvolver uma aplicação para gerenciamento de estoque, priorizando organização, clareza e confiabilidade no tratamento dos dados.
-
-O desenvolvimento está sendo realizado de forma incremental, começando pela construção do back-end e evoluindo para a integração com banco de dados, autenticação e interface web.
-
-Objetivos
-
-Desenvolver uma API REST utilizando Python.
-
-Implementar operações de gerenciamento de produtos e inventário.
-
-Integrar uma solução de banco de dados relacional.
-
-Implementar autenticação e controle de acesso.
-
-Desenvolver uma interface web integrada à API.
-
-Aplicar boas práticas de organização, segurança e manutenção de código.
+Sistema de gerenciamento de estoque desenvolvido com Python e FastAPI.
 
 Tecnologias
 
-As tecnologias planejadas para o projeto incluem:
-
-Tecnologia
-
-Finalidade
-
 Python
-
-Linguagem principal
 
 FastAPI
 
-Desenvolvimento da API REST
-
 Uvicorn
 
-Servidor ASGI
+Objetivo
 
-Pydantic
+Desenvolver uma aplicação para controle de produtos e gerenciamento de inventário, aplicando boas práticas de desenvolvimento back-end e construção de APIs REST.
 
-Validação e estruturação de dados
-
-SQLAlchemy
-
-Mapeamento objeto-relacional (ORM)
-
-PostgreSQL
-
-Banco de dados relacional
-
-HTML, CSS e JavaScript
-
-Desenvolvimento da interface web
-
-Git e GitHub
-
-Versionamento e gerenciamento do código
-
-Nota: a lista será atualizada conforme as tecnologias forem efetivamente integradas ao projeto.
-
-Estrutura do projeto
-
-A estrutura será organizada para separar as responsabilidades da aplicação e facilitar sua evolução.
-
-StackFlow/
-├── app/
-│   ├── __init__.py
-│   └── main.py
-├── .gitignore
-└── README.md
-
-A estrutura será expandida conforme novos módulos forem implementados, incluindo rotas, modelos, esquemas, configurações e acesso ao banco de dados.
-
-Como executar
-
-Pré-requisitos
-
-Python instalado.
-
-Git instalado.
-
-Visual Studio Code ou outro editor de sua preferência.
-
-1. Clone o repositório
-
-git clone <URL_DO_REPOSITORIO>
-cd StackFlow
-
-2. Crie um ambiente virtual
-
-python -m venv .venv
-
-3. Ative o ambiente virtual
-
-Windows — PowerShell
-
-.\.venv\Scripts\Activate.ps1
-
-Linux / macOS
-
-source .venv/bin/activate
-
-4. Instale as dependências
-
-python -m pip install fastapi "uvicorn[standard]"
-
-5. Execute a aplicação
-
-python -m uvicorn app.main:app --reload
-
-Após iniciar o servidor, acesse:
-
-API: http://127.0.0.1:8000/
-
-Documentação interativa: http://127.0.0.1:8000/docs
-
-Documentação alternativa: http://127.0.0.1:8000/redoc
-
-Segurança
-
-O projeto seguirá boas práticas de segurança durante sua evolução, incluindo proteção de credenciais, validação de dados recebidos e implementação de mecanismos de autenticação e autorização.
-
-Informações sensíveis, como chaves secretas e credenciais de banco de dados, não devem ser versionadas no repositório.
-
-Status do projeto
+Status
 
 Em desenvolvimento.
-
-O StackFlow está em sua fase inicial, com foco na configuração do ambiente, estruturação da aplicação e implementação dos primeiros endpoints da API.
-
-Este projeto também representa uma iniciativa prática de aprendizado e aplicação de conceitos de desenvolvimento back-end, construção de APIs REST, modelagem de dados e integração entre sistemas.
-
-O foco é evoluir continuamente a aplicação, priorizando código legível, organização e decisões técnicas fundamentadas.
 
 StackFlow — Organize your inventory. Simplify your workflow.
