@@ -1,38 +1,46 @@
-from multiprocessing import process
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
 
-from fastapi import APIRouter, HTTPException
-
+from app.database.connection import get_db
+from app.models.products import Product
 from app.schemas import ProductCreate, ProductPatch, ProductUpdate
 
 product_router = APIRouter(prefix="/products", tags=["Products"])
 
-products = [
-    {"id": 1, "name": "Páprica Doce 20g", "price": 2.50, "quantity": 3000},
-    {"id": 2, "name": "Páprica Defumada 20g", "price": 2.60, "quantity": 3000},
-]
+products = []
 
 
 @product_router.get("/")  # LIST OD PRODUCTS
-async def get_products():
-    return {"message": "List of products", "products": products}
+async def get_products(db: Session = Depends(get_db)):
+    products = db.query(Product).all()
+
+    return products
 
 
 @product_router.get("/{product_id}")  # CHOICE A PRODUCT
-async def get_product(product_id: int):
-    product = next(
-        (product for product in products if product["id"] == product_id), None
-    )
-    if not product:
-        raise HTTPException(status_code=404, detail="Product not found")
-    return {"product_id": product_id, "product": product}
+async def get_product(product_id: int, db: Session = Depends(get_db)):
+    product = db.query(Product).filter_by(id=product_id).first()
+
+    if product is None:
+        raise HTTPException(status_code=404, detail="product not found")
+
+    return product
 
 
 @product_router.post("/")  # CREATE ROUTE
-async def create_product(product_create: ProductCreate):
-    product = product_create.model_dump()
-    product["id"] = max((product["id"] for product in products), default=0) + 1
-    products.append(product)
-    return {"message": "Product create successfully", "product": product}
+async def create_product(product_create: ProductCreate, db: Session = Depends(get_db)):
+    new_product = Product(
+        name=product_create.name,
+        price=product_create.price,
+        quantity=product_create.quantity,
+    )
+    db.add(new_product)
+    db.commit()
+    db.refresh(new_product)
+    return {
+        "message": "Product create successfully",
+        "products": db.query(Product).all(),
+    }
 
 
 @product_router.delete("/{product_id}")  # DELETE PRODUCT
@@ -47,21 +55,21 @@ async def delete_product(product_id: int):
     return {"message": "Product deleted successfully", "id_product": product_id}
 
 
-@product_router.put("/{product_id}")
-async def update_product(product_id: int, product_update: ProductUpdate):
-    product = next((item for item in products if item["id"] == product_id), None)
+@product_router.put("/{product_id}")  # UPDATE PRODUCT
+async def update_product(
+    product_id: int, product_update: ProductUpdate, db: Session = Depends(get_db)
+):
+    product = db.query(Product).filter_by(id=product_id).first()
 
     if product is None:
-        raise HTTPException(status_code=404, detail="Product not found")
+        raise HTTPException(status_code=404, detail="product not found")
 
-    product["name"] = product_update.name
-    product["price"] = product_update.price
-    product["quantity"] = product_update.quantity
-
-    return {"message": "Product update successfully", "product": product}
+    product.name = product_update.name
+    product.price = product_update.price  # type: ignore
+    product.quantity = product_update.quantity
 
 
-@product_router.patch("/{product_id}")
+@product_router.patch("/{product_id}")  # PARTIAL UPDATE PRODUCT
 async def partial_update_product(product_id: int, product_patch: ProductPatch):
     product = next((item for item in products if item["id"] == product_id), None)
 
