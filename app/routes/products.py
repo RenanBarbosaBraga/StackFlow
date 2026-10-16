@@ -3,11 +3,9 @@ from sqlalchemy.orm import Session
 
 from app.database.connection import get_db
 from app.models.products import Product
-from app.schemas import ProductCreate, ProductPatch, ProductUpdate
+from app.schemas.product import ProductCreate, ProductPatch, ProductUpdate
 
 product_router = APIRouter(prefix="/products", tags=["Products"])
-
-products = []
 
 
 @product_router.get("/")  # LIST OD PRODUCTS
@@ -44,13 +42,14 @@ async def create_product(product_create: ProductCreate, db: Session = Depends(ge
 
 
 @product_router.delete("/{product_id}")  # DELETE PRODUCT
-async def delete_product(product_id: int):
-    product = next((item for item in products if item["id"] == product_id), None)
+async def delete_product(product_id: int, db: Session = Depends(get_db)):
+    product = db.query(Product).filter_by(id=product_id).first()
 
     if product is None:
         raise HTTPException(status_code=404, detail="Product not found")
 
-    products.remove(product)
+    db.delete(product)
+    db.commit()
 
     return {"message": "Product deleted successfully", "id_product": product_id}
 
@@ -67,6 +66,11 @@ async def update_product(
     product.name = product_update.name
     product.price = product_update.price  # type: ignore
     product.quantity = product_update.quantity
+
+    db.commit()
+    db.refresh(product)
+
+    return product
 
 
 @product_router.patch("/{product_id}")  # PARTIAL UPDATE PRODUCT
