@@ -16,3 +16,10 @@ class UserLogin(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class RefreshTokenSchema(BaseModel):
+    refresh_token: str
+
+    class Config:
+        from_attributes = True

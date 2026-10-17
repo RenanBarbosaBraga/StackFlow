@@ -1,10 +1,19 @@
 from fastapi import APIRouter, Depends, HTTPException
+from jose import JWTError, jwt
 from sqlalchemy.orm import Session
 
 from app.database.connection import get_db
 from app.models.user import User
-from app.schemas.user import UserCreate, UserLogin
-from app.security import create_access_token, hash_password, verity_password
+from app.schemas.user import RefreshTokenSchema, UserCreate, UserLogin
+from app.security import (
+    ALGORITHM,
+    SECRET_KEY,
+    create_access_token,
+    create_refresh_token,
+    get_current_user,
+    hash_password,
+    verity_password,
+)
 
 auth_router = APIRouter(prefix="/auth", tags=["Auth"])
 
@@ -14,6 +23,16 @@ async def get_users(db: Session = Depends(get_db)):
     users = db.query(User).all()
 
     return users
+
+
+@auth_router.get("/me")
+async def get_me(current_user: User = Depends(get_current_user)):
+
+    return {
+        "id": current_user.id,
+        "name": current_user.name,
+        "email": current_user.email,
+    }
 
 
 @auth_router.get("/{user_id}")
@@ -58,6 +77,34 @@ async def login_user(user_data: UserLogin, db: Session = Depends(get_db)):
     if not user or not verity_password(user_data.password, user.hashed_password):
         raise HTTPException(status_code=401, detail="Incorrect email or password")
 
-    token = create_access_token(user.id)
+    access_token = create_access_token(user.id)
+    refresh_token = create_refresh_token(user.id)
 
-    return {"access_token": token, "token_type": "bearer"}
+    return {
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "token_type": "bearer",
+    }
+
+
+@auth_router.post("/refresh")
+async def refresh_access_token(data: RefreshTokenSchema):
+    refresh_token = data.refresh_token
+
+    try:
+        payload = jwt.decode(refresh_token, SECRET_KEY, algorithms=ALGORITHM)
+
+        user_id = payload.get("sub")
+        token_type = payload.get("type")
+
+        if user_id is None or token_type != "refresh":
+            raise HTTPException(status_code=401, detail="Invalid refresh token")
+
+        user_id = int(user_id)
+
+    except (JWTError, ValueError):
+        raise HTTPException(status_code=401, detail="Invalid or expired refresh token")
+
+    new_access_token = create_access_token(user_id)
+
+    return {"access_token": new_access_token, "token_type": "bearer"}
