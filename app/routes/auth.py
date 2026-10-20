@@ -1,17 +1,24 @@
+import datetime
+
 from fastapi import APIRouter, Depends, HTTPException
-from jose import JWTError, jwt
 from sqlalchemy.orm import Session
 
 from app.database.connection import get_db
+from app.models.company import Company
+from app.models.refresh_token import RefreshToken
 from app.models.user import User
-from app.schemas.user import RefreshTokenSchema, UserCreate, UserLogin
+from app.schemas.user import (
+    RefreshTokenSchema,
+    UserCreate,
+    UserLogin,
+)
 from app.security import (
-    ALGORITHM,
-    SECRET_KEY,
     create_access_token,
-    create_refresh_token,
+    generate_refresh_token,
     get_current_user,
     hash_password,
+    hash_refresh_token,
+    save_refresh_token,
     verity_password,
 )
 
@@ -53,18 +60,26 @@ async def register_user(user_data: UserCreate, db: Session = Depends(get_db)):
     if existing_user:
         raise HTTPException(status_code=409, detail="Email already exist")
 
+    new_company = Company(name=user_data.company_name)
+    db.add(new_company)
+
+    db.flush()
+
     new_user = User(
         name=user_data.name,
         email=user_data.email,
+        company_id=new_company.id,
         hashed_password=hash_password(user_data.password),
     )
 
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
+    db.refresh(new_company)
 
     return {
-        "message": "User registered successfully",
+        "message": "User and company registered successfully",
+        "company": {"id": new_company.id, "name": new_company.name},
         "user": {"id": new_user.id, "name": new_user.name, "email": new_user.email},
     }
 
@@ -78,8 +93,10 @@ async def login_user(user_data: UserLogin, db: Session = Depends(get_db)):
         raise HTTPException(status_code=401, detail="Incorrect email or password")
 
     access_token = create_access_token(user.id)
-    refresh_token = create_refresh_token(user.id)
 
+    refresh_token = generate_refresh_token()
+    save_refresh_token(user.id, refresh_token, db)
+    db.commit()
     return {
         "access_token": access_token,
         "refresh_token": refresh_token,
@@ -88,23 +105,52 @@ async def login_user(user_data: UserLogin, db: Session = Depends(get_db)):
 
 
 @auth_router.post("/refresh")
-async def refresh_access_token(data: RefreshTokenSchema):
-    refresh_token = data.refresh_token
+def refresh_access_token(
+    data: RefreshTokenSchema,
+    db: Session = Depends(get_db),
+):
+    old_token_hash = hash_refresh_token(data.refresh_token)
 
     try:
-        payload = jwt.decode(refresh_token, SECRET_KEY, algorithms=ALGORITHM)
+        stored_token = (
+            db.query(RefreshToken)
+            .filter_by(token_hash=old_token_hash)
+            .with_for_update()
+            .first()
+        )
 
-        user_id = payload.get("sub")
-        token_type = payload.get("type")
+        if stored_token is None or stored_token.revoked:
+            raise HTTPException(
+                status_code=401,
+                detail="Invalid or expired refresh token",
+            )
 
-        if user_id is None or token_type != "refresh":
-            raise HTTPException(status_code=401, detail="Invalid refresh token")
+        if stored_token.expired_at <= datetime.datetime.now(datetime.UTC):
+            raise HTTPException(
+                status_code=401,
+                detail="Expired refresh token",
+            )
 
-        user_id = int(user_id)
+        user_id = stored_token.user_id
 
-    except (JWTError, ValueError):
-        raise HTTPException(status_code=401, detail="Invalid or expired refresh token")
+        stored_token.revoked = True
 
-    new_access_token = create_access_token(user_id)
+        new_refresh_token = generate_refresh_token()
 
-    return {"access_token": new_access_token, "token_type": "bearer"}
+        new_access_token = create_access_token(user_id)
+
+        save_refresh_token(user_id, new_refresh_token, db)
+        db.commit()
+
+        return {
+            "access_token": new_access_token,
+            "refresh_token": new_refresh_token,
+            "token_type": "bearer",
+        }
+
+    except HTTPException:
+        db.rollback()
+        raise
+    except Exception:
+        db.rollback()
+        raise

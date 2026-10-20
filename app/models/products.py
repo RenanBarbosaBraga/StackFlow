@@ -1,4 +1,4 @@
-from sqlalchemy import Float, Integer, String
+from sqlalchemy import Float, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.database.connection import Base
@@ -12,15 +12,20 @@ class Product(Base):
         index=True,
         primary_key=True,
     )
+
+    company_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("companies.id"), nullable=False
+    )
+
     name: Mapped[str] = mapped_column(
         String(100),
         nullable=False,
     )
-    price: Mapped[int] = mapped_column(
+    price: Mapped[float] = mapped_column(
         Float,
         nullable=False,
     )
-    quantity: Mapped[int] = mapped_column(
+    quantity: Mapped[float] = mapped_column(
         Float,
         nullable=False,
     )

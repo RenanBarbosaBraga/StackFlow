@@ -1,5 +1,7 @@
 import datetime
+import hashlib
 import os
+import secrets
 from datetime import timedelta
 
 from dotenv import load_dotenv
@@ -10,6 +12,8 @@ from pwdlib import PasswordHash
 from sqlalchemy.orm import Session
 
 from app.database.connection import get_db
+from app.models import refresh_token
+from app.models.refresh_token import RefreshToken
 from app.models.user import User
 
 password_hash = PasswordHash.recommended()
@@ -83,3 +87,25 @@ def get_current_user(
         raise HTTPException(status_code=401, detail="User not found")
 
     return user
+
+
+def generate_refresh_token() -> str:
+    return secrets.token_urlsafe(48)
+
+
+def hash_refresh_token(token: str) -> str:
+    return hashlib.sha256(token.encode("utf-8")).hexdigest()
+
+
+def get_refresh_token_expiration() -> datetime.datetime:
+    return datetime.datetime.now(datetime.UTC) + timedelta(days=7)
+
+
+def save_refresh_token(user_id: int, token: str, db: Session = Depends(get_db)):
+    refresh_token = RefreshToken(
+        user_id=user_id,
+        token_hash=hash_refresh_token(token),
+        expired_at=get_refresh_token_expiration(),
+        revoked=False,
+    )
+    db.add(refresh_token)

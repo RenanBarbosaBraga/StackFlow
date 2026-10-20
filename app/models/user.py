@@ -1,4 +1,4 @@
-from sqlalchemy import Integer, String
+from sqlalchemy import ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.database.connection import Base
@@ -12,5 +12,9 @@ class User(Base):
     name: Mapped[str] = mapped_column(String(100), nullable=False)
 
     email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
+
+    company_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("companies.id"), nullable=False
+    )
 
     hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
