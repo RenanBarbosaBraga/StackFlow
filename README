@@ -4,58 +4,27 @@ Inventory Management System · REST API
 
 O StackFlow é um sistema de gerenciamento de estoque em desenvolvimento, criado com Python e FastAPI. O projeto busca facilitar o controle de produtos e aplicar boas práticas de desenvolvimento back-end, segurança e organização de código.
 
-Tecnologias
-
+TECNOLOGIAS:
 Python
-
 FastAPI
-
 SQLAlchemy
-
 PostgreSQL
-
 Pydantic
-
 JWT
-
 Alembic
-
 Uvicorn
 
-Funcionalidades
-
+FUNCIONABILIDADES:
 Cadastro de usuários e empresas.
-
 Autenticação com JWT.
-
 Hash de senhas.
-
 Access tokens e refresh tokens.
-
 Rotação e revogação de refresh tokens.
-
 Integração com PostgreSQL.
-
 Gerenciamento de alterações no banco com Alembic.
-
 Listagem de produtos por empresa.
 
-Estrutura do projeto
-
-StackFlow/
-├── app/
-│   ├── database/
-│   ├── models/
-│   ├── routes/
-│   ├── schemas/
-│   ├── security.py
-│   └── main.py
-├── migrations/
-├── .env
-├── .gitignore
-└── alembic.ini
-
-Como executar
+COMO EXECUTAR:
 
 1. Clone o repositório
 
@@ -86,35 +55,25 @@ REFRESH_TOKEN_EXPIRE_MINUTES=7
 Preencha os valores de acordo com seu ambiente. Nunca compartilhe suas credenciais ou envie o .env para o GitHub.
 
 5. Execute as migrações
-
 python -m alembic upgrade head
 
 6. Inicie a aplicação
-
 python -m uvicorn app.main:app --reload
 
 Documentação da API
 
 Com a aplicação em execução:
-
 Swagger: http://127.0.0.1:8000/docs
-
 ReDoc: http://127.0.0.1:8000/redoc
 
-Próximos passos
-
+PRÓXIMOS PASSOS:
 Finalizar o CRUD de produtos.
-
 Garantir o isolamento dos dados entre empresas em todas as operações.
-
 Implementar testes automatizados.
-
 Desenvolver a interface web.
-
 Preparar a aplicação para implantação.
 
-Objetivo
-
+OBJETIVO:
 O StackFlow é um projeto de portfólio desenvolvido para praticar Python, APIs REST, autenticação, bancos de dados relacionais e arquitetura back-end, evoluindo de forma incremental e priorizando segurança e manutenção.
 
 StackFlow — Organize your inventory. Simplify your workflow.
