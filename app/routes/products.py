@@ -4,7 +4,6 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.database.connection import get_db
-from app.models import company
 from app.models.products import Product
 from app.models.user import User
 from app.schemas.product import ProductCreate, ProductPatch, ProductUpdate

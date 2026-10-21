@@ -53,34 +53,63 @@ async def get_user(user_id: int, db: Session = Depends(get_db)):
 
 
 @auth_router.post("/register", status_code=201)
-async def register_user(user_data: UserCreate, db: Session = Depends(get_db)):
-
+async def register_user(
+    user_data: UserCreate,
+    db: Session = Depends(get_db),
+):
     existing_user = db.query(User).filter_by(email=user_data.email).first()
 
     if existing_user:
-        raise HTTPException(status_code=409, detail="Email already exist")
+        raise HTTPException(
+            status_code=409,
+            detail="Email already exists",
+        )
 
-    new_company = Company(name=user_data.company_name)
-    db.add(new_company)
+    company_name = " ".join(user_data.company_name.split())
 
-    db.flush()
-
-    new_user = User(
-        name=user_data.name,
-        email=user_data.email,
-        company_id=new_company.id,
-        hashed_password=hash_password(user_data.password),
+    existing_company = (
+        db.query(Company).filter(Company.name.ilike(company_name)).first()
     )
 
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
-    db.refresh(new_company)
+    if existing_company:
+        raise HTTPException(
+            status_code=409,
+            detail="Company already exists. Ask an administrator for an invitation.",
+        )
+
+    try:
+        company = Company(name=company_name)
+        db.add(company)
+        db.flush()
+
+        new_user = User(
+            name=user_data.name.strip(),
+            email=user_data.email,
+            company_id=company.id,
+            hashed_password=hash_password(user_data.password),
+            is_admin=True,
+        )
+
+        db.add(new_user)
+        db.commit()
+        db.refresh(company)
+        db.refresh(new_user)
+
+    except Exception:
+        db.rollback()
+        raise
 
     return {
         "message": "User and company registered successfully",
-        "company": {"id": new_company.id, "name": new_company.name},
-        "user": {"id": new_user.id, "name": new_user.name, "email": new_user.email},
+        "company": {
+            "id": company.id,
+            "name": company.name,
+        },
+        "user": {
+            "id": new_user.id,
+            "name": new_user.name,
+            "email": new_user.email,
+        },
     }
 
 

@@ -1,4 +1,4 @@
-from sqlalchemy import ForeignKey, Integer, String
+from sqlalchemy import Boolean, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.database.connection import Base
@@ -18,3 +18,5 @@ class User(Base):
     )
 
     hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
+
+    is_admin: Mapped[bool] = mapped_column(Boolean, default=False)

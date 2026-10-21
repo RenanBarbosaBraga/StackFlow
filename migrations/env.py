@@ -5,6 +5,7 @@ from sqlalchemy import engine_from_config, pool
 
 from app.database.connection import DATABASE_URL, Base
 from app.models.company import Company
+from app.models.invitation import Invitation
 from app.models.products import Product
 from app.models.refresh_token import RefreshToken
 from app.models.user import User

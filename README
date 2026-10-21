@@ -1,21 +1,79 @@
 StackFlow
 
-Sistema de gerenciamento de estoque desenvolvido com Python e FastAPI.
+Inventory Management System · REST API
 
-Tecnologias
+O StackFlow é um sistema de gerenciamento de estoque em desenvolvimento, criado com Python e FastAPI. O projeto busca facilitar o controle de produtos e aplicar boas práticas de desenvolvimento back-end, segurança e organização de código.
 
+TECNOLOGIAS:
 Python
-
 FastAPI
-
+SQLAlchemy
+PostgreSQL
+Pydantic
+JWT
+Alembic
 Uvicorn
 
-Objetivo
+FUNCIONABILIDADES:
+Cadastro de usuários e empresas.
+Autenticação com JWT.
+Hash de senhas.
+Access tokens e refresh tokens.
+Rotação e revogação de refresh tokens.
+Integração com PostgreSQL.
+Gerenciamento de alterações no banco com Alembic.
+Listagem de produtos por empresa.
 
-Desenvolver uma aplicação para controle de produtos e gerenciamento de inventário, aplicando boas práticas de desenvolvimento back-end e construção de APIs REST.
+COMO EXECUTAR:
 
-Status
+1. Clone o repositório
 
-Em desenvolvimento.
+git clone <URL_DO_REPOSITORIO>
+cd StackFlow
+
+2. Crie e ative o ambiente virtual
+
+Windows — PowerShell:
+
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+
+3. Instale as dependências
+
+python -m pip install fastapi "uvicorn[standard]" sqlalchemy "psycopg[binary]" python-dotenv "pydantic[email]" "python-jose[cryptography]" "pwdlib[argon2]" alembic
+
+4. Configure o arquivo .env
+
+Adicione as variáveis necessárias para a conexão com o PostgreSQL e para a autenticação:
+
+DATABASE_URL=
+SECRET_KEY=
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+REFRESH_TOKEN_EXPIRE_MINUTES=7
+
+Preencha os valores de acordo com seu ambiente. Nunca compartilhe suas credenciais ou envie o .env para o GitHub.
+
+5. Execute as migrações
+python -m alembic upgrade head
+
+6. Inicie a aplicação
+python -m uvicorn app.main:app --reload
+
+Documentação da API
+
+Com a aplicação em execução:
+Swagger: http://127.0.0.1:8000/docs
+ReDoc: http://127.0.0.1:8000/redoc
+
+PRÓXIMOS PASSOS:
+Finalizar o CRUD de produtos.
+Garantir o isolamento dos dados entre empresas em todas as operações.
+Implementar testes automatizados.
+Desenvolver a interface web.
+Preparar a aplicação para implantação.
+
+OBJETIVO:
+O StackFlow é um projeto de portfólio desenvolvido para praticar Python, APIs REST, autenticação, bancos de dados relacionais e arquitetura back-end, evoluindo de forma incremental e priorizando segurança e manutenção.
 
 StackFlow — Organize your inventory. Simplify your workflow.
