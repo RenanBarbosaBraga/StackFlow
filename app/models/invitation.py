@@ -21,7 +21,7 @@ class Invitation(Base):
 
     token_hash: Mapped[str] = mapped_column(String, nullable=False, unique=True)
 
-    expires_at: Mapped[DateTime] = mapped_column(
+    expires_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False
     )
 

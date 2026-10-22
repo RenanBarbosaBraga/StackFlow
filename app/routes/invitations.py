@@ -61,7 +61,7 @@ async def create_invitation(
 
     new_invitation = Invitation(
         company_id=current_user.company_id,
-        email=invitation_data.email,
+        email=str(invitation_data.email).strip().lower(),
         token_hash=token_hash,
         expires_at=expires_at,
         created_by=current_user.id,

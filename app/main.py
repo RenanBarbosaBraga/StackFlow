@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from app.routes.auth import auth_router
 from app.routes.invitations import invitation_router
 from app.routes.products import product_router
+from app.routes.public_invitation import public_invitation_router
 
 app = FastAPI(
     title="StackFlow API",
@@ -19,3 +20,4 @@ def inicio():
 app.include_router(product_router)
 app.include_router(auth_router)
 app.include_router(invitation_router)
+app.include_router(public_invitation_router)

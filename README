@@ -30,6 +30,54 @@ COMO EXECUTAR:
 
 git clone <URL_DO_REPOSITORIO>
 cd StackFlow
+<<<<<<< HEAD
+
+2. Crie e ative o ambiente virtual
+
+Windows — PowerShell:
+
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+
+3. Instale as dependências
+
+python -m pip install fastapi "uvicorn[standard]" sqlalchemy "psycopg[binary]" python-dotenv "pydantic[email]" "python-jose[cryptography]" "pwdlib[argon2]" alembic
+
+4. Configure o arquivo .env
+
+Adicione as variáveis necessárias para a conexão com o PostgreSQL e para a autenticação:
+
+DATABASE_URL=
+SECRET_KEY=
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+REFRESH_TOKEN_EXPIRE_MINUTES=7
+
+Preencha os valores de acordo com seu ambiente. Nunca compartilhe suas credenciais ou envie o .env para o GitHub.
+
+5. Execute as migrações
+python -m alembic upgrade head
+
+6. Inicie a aplicação
+python -m uvicorn app.main:app --reload
+
+Documentação da API
+
+Com a aplicação em execução:
+Swagger: http://127.0.0.1:8000/docs
+ReDoc: http://127.0.0.1:8000/redoc
+
+PRÓXIMOS PASSOS:
+Finalizar o CRUD de produtos.
+Garantir o isolamento dos dados entre empresas em todas as operações.
+Implementar testes automatizados.
+Desenvolver a interface web.
+Preparar a aplicação para implantação.
+
+OBJETIVO:
+O StackFlow é um projeto de portfólio desenvolvido para praticar Python, APIs REST, autenticação, bancos de dados relacionais e arquitetura back-end, evoluindo de forma incremental e priorizando segurança e manutenção.
+=======
+>>>>>>> a1aae5b7a3b1815dd1fcd75b92d564065612a929
 
 2. Crie e ative o ambiente virtual
 
