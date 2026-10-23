@@ -1,5 +1,3 @@
-from operator import ge
-
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -63,9 +61,20 @@ async def create_product(
     }
 
 
-@product_router.delete("/{product_id}")  # DELETE PRODUCT
-async def delete_product(product_id: int, db: Session = Depends(get_db)):
-    product = db.query(Product).filter_by(id=product_id).first()
+@product_router.delete("/{product_id}")
+async def delete_product(
+    product_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    product = (
+        db.query(Product)
+        .filter_by(
+            id=product_id,
+            company_id=current_user.company_id,
+        )
+        .first()
+    )
 
     if product is None:
         raise HTTPException(status_code=404, detail="Product not found")
@@ -76,11 +85,21 @@ async def delete_product(product_id: int, db: Session = Depends(get_db)):
     return {"message": "Product deleted successfully", "id_product": product_id}
 
 
-@product_router.put("/{product_id}")  # UPDATE PRODUCT
+@product_router.put("/{product_id}")
 async def update_product(
-    product_id: int, product_update: ProductUpdate, db: Session = Depends(get_db)
+    product_id: int,
+    product_update: ProductUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
-    product = db.query(Product).filter_by(id=product_id).first()
+    product = (
+        db.query(Product)
+        .filter_by(
+            id=product_id,
+            company_id=current_user.company_id,
+        )
+        .first()
+    )
 
     if product is None:
         raise HTTPException(status_code=404, detail="Product not found")
@@ -95,6 +114,42 @@ async def update_product(
     return product
 
 
-@product_router.patch("/{product_id}")  # PARTIAL UPDATE PRODUCT
-async def partial_update_product(product_id: int, product_patch: ProductPatch):
-    pass
+@product_router.patch("/{product_id}")
+async def partial_update_product(
+    product_id: int,
+    product_patch: ProductPatch,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    product = (
+        db.query(Product)
+        .filter_by(
+            id=product_id,
+            company_id=current_user.company_id,
+        )
+        .first()
+    )
+
+    if product is None:
+        raise HTTPException(status_code=404, detail="Product not found")
+
+    update_data = product_patch.model_dump(exclude_unset=True)
+
+    if not update_data:
+        raise HTTPException(
+            status_code=422,
+            detail="At least one field must be provided",
+        )
+
+    for field, value in update_data.items():
+        if value is None:
+            raise HTTPException(
+                status_code=422,
+                detail=f"{field} cannot be null",
+            )
+        setattr(product, field, value)
+
+    db.commit()
+    db.refresh(product)
+
+    return product
