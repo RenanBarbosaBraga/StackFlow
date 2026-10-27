@@ -6,7 +6,6 @@ client = TestClient(app)
 
 
 def test_company_cannot_delete_another_company_product(client):
-    # Empresa A cria seu usuário.
     client.post(
         "/auth/register",
         json={
@@ -17,7 +16,6 @@ def test_company_cannot_delete_another_company_product(client):
         },
     )
 
-    # Empresa A faz login.
     login_a = client.post(
         "/auth/login",
         json={
@@ -27,7 +25,6 @@ def test_company_cannot_delete_another_company_product(client):
     )
     token_a = login_a.json()["access_token"]
 
-    # Empresa A cria um produto.
     product_response = client.post(
         "/products/",
         headers={"Authorization": f"Bearer {token_a}"},
@@ -40,7 +37,6 @@ def test_company_cannot_delete_another_company_product(client):
     assert product_response.status_code == 200
     product_id = product_response.json()["products"]["id"]
 
-    # Empresa B cria seu usuário.
     client.post(
         "/auth/register",
         json={
@@ -51,7 +47,6 @@ def test_company_cannot_delete_another_company_product(client):
         },
     )
 
-    # Empresa B faz login.
     login_b = client.post(
         "/auth/login",
         json={
@@ -61,7 +56,6 @@ def test_company_cannot_delete_another_company_product(client):
     )
     token_b = login_b.json()["access_token"]
 
-    # Empresa B tenta excluir o produto da Empresa A.
     response = client.delete(
         f"/products/{product_id}",
         headers={"Authorization": f"Bearer {token_b}"},
@@ -69,7 +63,6 @@ def test_company_cannot_delete_another_company_product(client):
 
     assert response.status_code == 404
 
-    # Confirma que o produto continua existindo para a Empresa A.
     check_product = client.get(
         f"/products/{product_id}",
         headers={"Authorization": f"Bearer {token_a}"},
@@ -79,7 +72,6 @@ def test_company_cannot_delete_another_company_product(client):
 
 
 def test_patch_updates_only_provided_fields(client):
-    # Cria a empresa e o administrador.
     client.post(
         "/auth/register",
         json={
@@ -90,7 +82,6 @@ def test_patch_updates_only_provided_fields(client):
         },
     )
 
-    # Faz login.
     login = client.post(
         "/auth/login",
         json={
@@ -101,7 +92,6 @@ def test_patch_updates_only_provided_fields(client):
     token = login.json()["access_token"]
     headers = {"Authorization": f"Bearer {token}"}
 
-    # Cria um produto.
     created = client.post(
         "/products/",
         headers=headers,
@@ -114,7 +104,6 @@ def test_patch_updates_only_provided_fields(client):
     assert created.status_code == 200
     product_id = created.json()["products"]["id"]
 
-    # Altera somente o preço.
     response = client.patch(
         f"/products/{product_id}",
         headers=headers,
@@ -128,7 +117,6 @@ def test_patch_updates_only_provided_fields(client):
 
 
 def test_company_cannot_patch_another_company_product(client):
-    # Cria a Empresa A.
     client.post(
         "/auth/register",
         json={
@@ -149,7 +137,6 @@ def test_company_cannot_patch_another_company_product(client):
     token_a = login_a.json()["access_token"]
     headers_a = {"Authorization": f"Bearer {token_a}"}
 
-    # Empresa A cria um produto.
     created = client.post(
         "/products/",
         headers=headers_a,
@@ -162,7 +149,6 @@ def test_company_cannot_patch_another_company_product(client):
     assert created.status_code == 200
     product_id = created.json()["products"]["id"]
 
-    # Cria a Empresa B.
     client.post(
         "/auth/register",
         json={
@@ -183,7 +169,6 @@ def test_company_cannot_patch_another_company_product(client):
     token_b = login_b.json()["access_token"]
     headers_b = {"Authorization": f"Bearer {token_b}"}
 
-    # Empresa B tenta alterar o preço do produto da Empresa A.
     response = client.patch(
         f"/products/{product_id}",
         headers=headers_b,
@@ -192,7 +177,6 @@ def test_company_cannot_patch_another_company_product(client):
 
     assert response.status_code == 404
 
-    # Confirma que o produto continua intacto.
     check = client.get(
         f"/products/{product_id}",
         headers=headers_a,
@@ -202,3 +186,156 @@ def test_company_cannot_patch_another_company_product(client):
     assert check.json()["name"] == "Monitor"
     assert check.json()["price"] == 800.0
     assert check.json()["quantity"] == 5
+
+
+def test_company_cannot_get_another_company_product(client):
+    client.post(
+        "/auth/register",
+        json={
+            "company_name": "Empresa Consulta A",
+            "name": "Admin Consulta A",
+            "email": "consulta.a@stackflow.com",
+            "password": "SenhaSegura123!",
+        },
+    )
+
+    login_a = client.post(
+        "/auth/login",
+        json={
+            "email": "consulta.a@stackflow.com",
+            "password": "SenhaSegura123!",
+        },
+    )
+    token_a = login_a.json()["access_token"]
+    headers_a = {"Authorization": f"Bearer {token_a}"}
+
+    created = client.post(
+        "/products/",
+        headers=headers_a,
+        json={
+            "name": "Notebook Empresarial",
+            "price": 3500.0,
+            "quantity": 3,
+        },
+    )
+
+    assert created.status_code == 200
+    product_id = created.json()["products"]["id"]
+
+    client.post(
+        "/auth/register",
+        json={
+            "company_name": "Empresa Consulta B",
+            "name": "Admin Consulta B",
+            "email": "consulta.b@stackflow.com",
+            "password": "SenhaSegura123!",
+        },
+    )
+
+    login_b = client.post(
+        "/auth/login",
+        json={
+            "email": "consulta.b@stackflow.com",
+            "password": "SenhaSegura123!",
+        },
+    )
+    token_b = login_b.json()["access_token"]
+    headers_b = {"Authorization": f"Bearer {token_b}"}
+
+    response = client.get(
+        f"/products/{product_id}",
+        headers=headers_b,
+    )
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Product not found"
+
+    owner_response = client.get(
+        f"/products/{product_id}",
+        headers=headers_a,
+    )
+
+    assert owner_response.status_code == 200
+    assert owner_response.json()["name"] == "Notebook Empresarial"
+
+
+def test_list_products_returns_only_current_company_products(client):
+    client.post(
+        "/auth/register",
+        json={
+            "company_name": "Empresa Lista A",
+            "name": "Admin Lista A",
+            "email": "listaa@stackflow.com",
+            "password": "SenhaSegura123!",
+        },
+    )
+
+    login_a = client.post(
+        "/auth/login",
+        json={
+            "email": "listaa@stackflow.com",
+            "password": "SenhaSegura123!",
+        },
+    )
+    assert login_a.status_code == 200
+
+    token_a = login_a.json()["access_token"]
+    headers_a = {"Authorization": f"Bearer {token_a}"}
+
+    client.post(
+        "/auth/register",
+        json={
+            "company_name": "Empresa Lista B",
+            "name": "Admin Lista B",
+            "email": "listab@stackflow.com",
+            "password": "SenhaSegura123!",
+        },
+    )
+
+    login_b = client.post(
+        "/auth/login",
+        json={
+            "email": "listab@stackflow.com",
+            "password": "SenhaSegura123!",
+        },
+    )
+    assert login_b.status_code == 200
+
+    token_b = login_b.json()["access_token"]
+    headers_b = {"Authorization": f"Bearer {token_b}"}
+
+    product_a = client.post(
+        "/products/",
+        headers=headers_a,
+        json={
+            "name": "Teclado da Empresa A",
+            "price": 150.0,
+            "quantity": 10,
+        },
+    )
+    assert product_a.status_code == 200
+
+    product_b = client.post(
+        "/products/",
+        headers=headers_b,
+        json={
+            "name": "Mouse da Empresa B",
+            "price": 80.0,
+            "quantity": 5,
+        },
+    )
+    assert product_b.status_code == 200
+
+    response = client.get(
+        "/products/",
+        headers=headers_a,
+    )
+
+    assert response.status_code == 200
+
+    products = response.json()
+    product_names = [product["name"] for product in products]
+
+    assert "Teclado da Empresa A" in product_names
+    assert "Mouse da Empresa B" not in product_names
+    assert len(products) == 1
